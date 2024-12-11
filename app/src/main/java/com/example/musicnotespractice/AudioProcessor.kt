@@ -11,7 +11,8 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 
 class AudioProcessor(
-    private val context: Context
+    private val context: Context,
+    private val pitchViewModel: PitchViewModel
 ) {
 
     private val sampleRate = 44100
@@ -50,15 +51,10 @@ class AudioProcessor(
     private fun processAudioData(buffer: ShortArray, numRead: Int) {
 //        Log.d("AudioProcessor", "Processing audio data...")
         val pitch = yin.getPitch(buffer)
+        pitchViewModel.updatePitch(pitch)
         if(pitch>0) {
             Log.d("AudioProcessor", "Pitch: $pitch")
         }
-        // Implement your audio processing logic here
-        // For example, you can:
-        // - Apply filters (e.g., low-pass, high-pass, band-pass)
-        // - Perform noise reduction
-        // - Detect specific audio events (e.g., voice activity detection)
-        // - Extract features for machine learning models (e.g., MFCCs, Mel-spectrograms)
     }
 
     fun stopRecording() {
