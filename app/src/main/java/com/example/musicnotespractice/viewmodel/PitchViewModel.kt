@@ -1,4 +1,4 @@
-package com.example.musicnotespractice
+package com.example.musicnotespractice.viewmodel
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

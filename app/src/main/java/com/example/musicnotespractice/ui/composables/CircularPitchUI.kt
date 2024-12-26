@@ -45,6 +45,8 @@ fun CircularPitchUI(
             .padding(8.dp)
     ){
 
+//        Log.d("Circular Pitch UI Canvas", "Size: ${size.width}, ${size.height}")
+
         val circleCenter = if(note!=" " && notesOffsets[note]!=null){
             notesOffsets[note]!!
         }
@@ -57,13 +59,20 @@ fun CircularPitchUI(
                 radius = size.width/10,
                 center = circleCenter,
                 colorStops = arrayOf(
-                    Pair(0f, Color(0xFFF1C25D)), Pair(0.60f, Color(0xFF897447)), Pair(1f, Color(0xFF2B2B2B))
+                    Pair(0f, Color(0xFFF1C25D)), Pair(0.60f, Color(0x88F1C25D)), Pair(1f, Color(0x01F1C25D))
                 )
             ),
             radius = size.width/10,
             center = circleCenter
         )
-        val radius = size.width/2.5f
+        val radius = if(size.width<size.height){
+            //diameter = 90% of width
+            size.width*0.45f
+        }
+        else{
+            //diameter = 90% of height
+            size.height*0.45f
+        }
         notesCosSinValues.forEach { (noteText, cosSinValues) ->
             val textLayoutResult = textMeasurer.measure(
                 text = noteText,
@@ -73,24 +82,29 @@ fun CircularPitchUI(
                 (size.center.x+(radius*cosSinValues.first)),
                 (size.center.y+(radius*cosSinValues.second))
             )
-            if(notesOffsets[noteText]!=null) {
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = noteText,
-                    topLeft = Offset(
-                        notesOffsets[noteText]!!.x - (textLayoutResult.size.width / 2f),
-                        notesOffsets[noteText]!!.y - (textLayoutResult.size.height / 2f)
-                    ),
-                    style = TextStyle(
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Light
-                    )
-                )
+            val textOffsetX = notesOffsets[noteText]!!.x - (textLayoutResult.size.width / 2f)
+            val textOffsetY = notesOffsets[noteText]!!.y - (textLayoutResult.size.height / 2f)
+            if(textOffsetX<0 || textOffsetY<0){
+                //continue in for each loop
+                return@forEach
             }
+            if(notesOffsets[noteText]==null) {
+                return@forEach
+            }
+//            Log.d("Circular Pitch UI Canvas", "$noteText X,Y: $textOffsetX, $textOffsetY")
+            drawText(
+                textMeasurer = textMeasurer,
+                text = noteText,
+                topLeft = Offset(textOffsetX, textOffsetY),
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light
+                )
+            )
         }
 
-        Log.d("CircularPitchUI", "Note: $note")
+//        Log.d("CircularPitchUI", "Note: $note")
     }
 
 }

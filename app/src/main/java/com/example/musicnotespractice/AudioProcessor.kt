@@ -8,11 +8,22 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.musicnotespractice.viewmodel.AudioBufferViewModel
+import com.example.musicnotespractice.viewmodel.PitchViewModel
 import kotlinx.coroutines.*
+import org.apache.commons.math3.transform.DftNormalization
+import org.apache.commons.math3.transform.FastFourierTransformer
+import org.apache.commons.math3.transform.TransformType
+import kotlin.math.ceil
+import kotlin.math.ln
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.sqrt
 
 class AudioProcessor(
     private val context: Context,
-    private val pitchViewModel: PitchViewModel
+    private val pitchViewModel: PitchViewModel,
+    private val audioBufferViewModel: AudioBufferViewModel
 ) {
 
     private val sampleRate = 44100
@@ -21,6 +32,7 @@ class AudioProcessor(
 
     private var recorder: AudioRecord? = null
     private var bufferSize = 0
+    private val FFT = FastFourierTransformer(DftNormalization.UNITARY)
     private var yin = Yin(44100f)
 
     private fun checkPermission(): Boolean {
@@ -52,6 +64,35 @@ class AudioProcessor(
 //        Log.d("AudioProcessor", "Processing audio data...")
         val pitch = yin.getPitch(buffer)
         pitchViewModel.updatePitch(pitch)
+
+        val doubleArrayBuffer = buffer.map {
+            it.toDouble()/Short.MAX_VALUE
+        }.toDoubleArray()
+
+        Log.d("AudioProcessor", "Num read: $numRead, buffer size: ${buffer.size} doubleArray: ${doubleArrayBuffer.contentToString()}")
+
+//        val fftResult = FFT.transform(doubleArrayBuffer, TransformType.FORWARD)
+//
+//        audioBufferViewModel.updateAudioBuffer(fftResult)
+
+        val dataArrayLength = doubleArrayBuffer.size
+        val nextPowerOfTwo = 2.0.pow(ceil(ln(dataArrayLength.toDouble()) / ln(2.0))).toInt()
+        val paddedArray = DoubleArray(nextPowerOfTwo)
+        paddedArray.fill(0.0)
+        System.arraycopy(doubleArrayBuffer, 0, paddedArray, 0, doubleArrayBuffer.size)
+
+        val fftResult = FFT.transform(paddedArray, TransformType.FORWARD)
+        val magnitudeSpectrum = fftResult.map { round(sqrt(it.real * it.real + it.imaginary * it.imaginary)*1000.0)/1000.0 }
+
+        val magnitudeMax = magnitudeSpectrum.maxOrNull()
+        if(magnitudeMax!=null) {
+            val normalizedSpectrum = magnitudeSpectrum.map { round(it / magnitudeMax *1000.0)/1000.0 }
+            audioBufferViewModel.updateAudioBuffer(normalizedSpectrum)
+        }
+        else{
+            audioBufferViewModel.updateAudioBuffer(magnitudeSpectrum)
+        }
+
         if(pitch>0) {
             Log.d("AudioProcessor", "Pitch: $pitch")
         }
