@@ -1,4 +1,4 @@
-package com.example.musicnotespractice
+package com.example.musicnotespractice.utils
 
 import android.Manifest
 import android.content.Context
@@ -61,7 +61,7 @@ class AudioProcessor(
     }
 
     private fun processAudioData(buffer: ShortArray, numRead: Int) {
-//        Log.d("AudioProcessor", "Processing audio data...")
+
         val pitch = yin.getPitch(buffer)
         pitchViewModel.updatePitch(pitch)
 
@@ -70,10 +70,6 @@ class AudioProcessor(
         }.toDoubleArray()
 
         Log.d("AudioProcessor", "Num read: $numRead, buffer size: ${buffer.size} doubleArray: ${doubleArrayBuffer.contentToString()}")
-
-//        val fftResult = FFT.transform(doubleArrayBuffer, TransformType.FORWARD)
-//
-//        audioBufferViewModel.updateAudioBuffer(fftResult)
 
         val dataArrayLength = doubleArrayBuffer.size
         val nextPowerOfTwo = 2.0.pow(ceil(ln(dataArrayLength.toDouble()) / ln(2.0))).toInt()
@@ -84,14 +80,14 @@ class AudioProcessor(
         val fftResult = FFT.transform(paddedArray, TransformType.FORWARD)
         val magnitudeSpectrum = fftResult.map { round(sqrt(it.real * it.real + it.imaginary * it.imaginary)*1000.0)/1000.0 }
 
-        val magnitudeMax = magnitudeSpectrum.maxOrNull()
-        if(magnitudeMax!=null) {
-            val normalizedSpectrum = magnitudeSpectrum.map { round(it / magnitudeMax *1000.0)/1000.0 }
-            audioBufferViewModel.updateAudioBuffer(normalizedSpectrum)
-        }
-        else{
+//        val magnitudeMax = magnitudeSpectrum.maxOrNull()
+//        if(magnitudeMax!=null) {
+//            val normalizedSpectrum = magnitudeSpectrum.map { round(it / magnitudeMax *1000.0)/1000.0 }
+//            audioBufferViewModel.updateAudioBuffer(normalizedSpectrum)
+//        }
+//        else{
             audioBufferViewModel.updateAudioBuffer(magnitudeSpectrum)
-        }
+//        }
 
         if(pitch>0) {
             Log.d("AudioProcessor", "Pitch: $pitch")
@@ -103,10 +99,6 @@ class AudioProcessor(
         recorder?.stop()
         recorder?.release()
         recorder = null
-    }
-
-    companion object {
-        private const val REQUEST_RECORD_AUDIO_PERMISSION = 100
     }
 
 }

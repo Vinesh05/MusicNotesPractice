@@ -1,6 +1,5 @@
 package com.example.musicnotespractice.ui.composables
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -44,8 +43,6 @@ fun CircularPitchUI(
         modifier = modifier.fillMaxWidth()
             .padding(8.dp)
     ){
-
-//        Log.d("Circular Pitch UI Canvas", "Size: ${size.width}, ${size.height}")
 
         val circleCenter = if(note!=" " && notesOffsets[note]!=null){
             notesOffsets[note]!!
@@ -91,7 +88,7 @@ fun CircularPitchUI(
             if(notesOffsets[noteText]==null) {
                 return@forEach
             }
-//            Log.d("Circular Pitch UI Canvas", "$noteText X,Y: $textOffsetX, $textOffsetY")
+
             drawText(
                 textMeasurer = textMeasurer,
                 text = noteText,
@@ -103,8 +100,6 @@ fun CircularPitchUI(
                 )
             )
         }
-
-//        Log.d("CircularPitchUI", "Note: $note")
     }
 
 }
