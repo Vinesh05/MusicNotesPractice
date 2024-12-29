@@ -2,6 +2,7 @@ package com.example.musicnotespractice
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -20,23 +21,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TimerOff
-import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -50,6 +49,10 @@ import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
 import com.example.musicnotespractice.viewmodel.AudioBufferViewModel
 import com.example.musicnotespractice.viewmodel.PitchViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -166,6 +169,7 @@ fun MainButtons(
                 "Start/Stop Ticker"
             )
         }
+        TickerSound(isTicking)
         Button(
             modifier = if(isRecording.value) buttonModifierOn else buttonModifierOff,
             contentPadding = PaddingValues(8.dp),
@@ -189,6 +193,47 @@ fun MainButtons(
         }
     }
 }
+
+@Composable
+fun TickerSound(
+    isTicking: MutableState<Boolean>
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val tickJob = remember { mutableStateOf<Job?>(null) }
+    val tickPlayer = remember {
+        MediaPlayer.create(context, R.raw.tick_sound).apply {
+            isLooping = false
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            tickPlayer.release()
+            tickJob.value?.cancel()
+        }
+    }
+
+    LaunchedEffect(isTicking.value) {
+        if (isTicking.value) {
+            tickJob.value?.cancel()
+
+            tickJob.value = scope.launch {
+                while (isActive) {
+                    Log.d("Metronome", "Loud Tick")
+                    tickPlayer.seekTo(0)
+                    tickPlayer.start()
+                    delay(1000)
+                }
+            }
+        }
+        else {
+            tickJob.value?.cancel()
+            tickJob.value = null
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
