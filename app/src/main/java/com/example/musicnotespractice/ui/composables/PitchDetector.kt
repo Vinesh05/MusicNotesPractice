@@ -102,24 +102,31 @@ fun PitchDetector(
         )
 
         val fftSize = audioBuffer.size
-
         val frequencyBins by remember(audioBuffer) {
             if (!audioBuffer[0].isNaN() && audioBuffer.size > 2) {
+                val binAverages = musicalFrequencies.mapIndexed { octave, (lowFreq, highFreq) ->
+                    val samplingRate = 44100f
+                    val startBin = (lowFreq * fftSize / samplingRate).toInt().coerceIn(0, fftSize/2)
+                    val endBin = (highFreq * fftSize / samplingRate).toInt().coerceIn(0, fftSize/2)
+                    val binAverage = audioBuffer
+                        .slice(startBin until endBin)
+                        .map { it.absoluteValue }
+                        .average()
+                    binAverage
+                }
+
+                val totalAverage = binAverages.sum()
+
                 mutableStateOf(
-                    musicalFrequencies.mapIndexed { octave, (lowFreq, highFreq) ->
-                        val samplingRate = 44100f
-
-                        val startBin = (lowFreq * fftSize / samplingRate).toInt().coerceIn(0, fftSize/2)
-                        val endBin = (highFreq * fftSize / samplingRate).toInt().coerceIn(0, fftSize/2)
-
-                        val binAverage = audioBuffer
-                            .slice(startBin until endBin)
-                            .map { it.absoluteValue }
-                            .average()
-
+                    List(musicalFrequencies.size) { octave ->
+                        val percentage = if (totalAverage > 0) {
+                            (binAverages[octave] / totalAverage * 100).toFloat()
+                        } else {
+                            0f
+                        }
                         BarData(
                             "C${octave}",
-                            binAverage.toFloat() * 100f
+                            percentage
                         )
                     }
                 )

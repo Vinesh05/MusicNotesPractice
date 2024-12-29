@@ -80,14 +80,7 @@ class AudioProcessor(
         val fftResult = FFT.transform(paddedArray, TransformType.FORWARD)
         val magnitudeSpectrum = fftResult.map { round(sqrt(it.real * it.real + it.imaginary * it.imaginary)*1000.0)/1000.0 }
 
-//        val magnitudeMax = magnitudeSpectrum.maxOrNull()
-//        if(magnitudeMax!=null) {
-//            val normalizedSpectrum = magnitudeSpectrum.map { round(it / magnitudeMax *1000.0)/1000.0 }
-//            audioBufferViewModel.updateAudioBuffer(normalizedSpectrum)
-//        }
-//        else{
-            audioBufferViewModel.updateAudioBuffer(magnitudeSpectrum)
-//        }
+        audioBufferViewModel.updateAudioBuffer(magnitudeSpectrum)
 
         if(pitch>0) {
             Log.d("AudioProcessor", "Pitch: $pitch")
