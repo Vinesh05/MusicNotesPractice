@@ -97,7 +97,9 @@ fun PitchDetector(
         }
 
         CircularPitchUI(
-            modifier = Modifier.weight(4f),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .weight(4f),
             noteName
         )
 
@@ -133,7 +135,16 @@ fun PitchDetector(
             } else {
                 mutableStateOf(
                     listOf(
-                        BarData(1, 100f),
+                        BarData("C0", 100f),
+                        BarData("C1", 80f),
+                        BarData("C2", 60f),
+                        BarData("C3", 40f),
+                        BarData("C4", 20f),
+                        BarData("C5", 20f),
+                        BarData("C6", 40f),
+                        BarData("C7", 60f),
+                        BarData("C8", 80f),
+                        BarData("C9", 100f),
                     )
                 )
             }
@@ -141,9 +152,10 @@ fun PitchDetector(
 
         BarChart(
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .weight(4f)
                 .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth(0.9f),
             barData = frequencyBins,
             color = Color.Blue,
             axisConfig = AxisConfig(
