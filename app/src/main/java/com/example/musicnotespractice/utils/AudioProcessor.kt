@@ -23,7 +23,8 @@ import kotlin.math.sqrt
 class AudioProcessor(
     private val context: Context,
     private val pitchViewModel: PitchViewModel,
-    private val audioBufferViewModel: AudioBufferViewModel
+    private val audioBufferViewModel: AudioBufferViewModel,
+    private val pitchCalibrator: PitchCalibrator
 ) {
 
     private val sampleRate = 44100
@@ -50,12 +51,14 @@ class AudioProcessor(
 
         recorder?.startRecording()
 
-        while (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-            val buffer = ShortArray(bufferSize)
-            val numRead = recorder?.read(buffer, 0, bufferSize) ?: 0
+        CoroutineScope(Dispatchers.IO).launch {
+            while (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                val buffer = ShortArray(bufferSize)
+                val numRead = recorder?.read(buffer, 0, bufferSize) ?: 0
 
-            if (numRead > 0) {
-                processAudioData(buffer, numRead)
+                if (numRead > 0) {
+                    processAudioData(buffer, numRead)
+                }
             }
         }
     }
@@ -63,7 +66,8 @@ class AudioProcessor(
     private fun processAudioData(buffer: ShortArray, numRead: Int) {
 
         val pitch = yin.getPitch(buffer)
-        pitchViewModel.updatePitch(pitch)
+        val pitchCalibrated = pitchCalibrator.getCalibratedPitch(pitch)
+        pitchViewModel.updatePitch(pitchCalibrated)
 
         val doubleArrayBuffer = buffer.map {
             it.toDouble()/Short.MAX_VALUE
@@ -83,7 +87,7 @@ class AudioProcessor(
         audioBufferViewModel.updateAudioBuffer(magnitudeSpectrum)
 
         if(pitch>0) {
-            Log.d("AudioProcessor", "Pitch: $pitch")
+            Log.d("AudioProcessor", "Pitch: $pitch, Calibrated: $pitchCalibrated")
         }
     }
 

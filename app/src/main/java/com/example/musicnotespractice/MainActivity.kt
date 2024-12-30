@@ -1,10 +1,13 @@
 package com.example.musicnotespractice
 
 import android.Manifest
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Timer
@@ -33,6 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,8 +53,12 @@ import com.example.musicnotespractice.ui.composables.PitchDetector
 import com.example.musicnotespractice.ui.theme.BackgroundColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
+import com.example.musicnotespractice.utils.Constants
+import com.example.musicnotespractice.utils.PitchCalibrator
 import com.example.musicnotespractice.viewmodel.AudioBufferViewModel
 import com.example.musicnotespractice.viewmodel.PitchViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -101,14 +111,15 @@ fun MainScreen(
     val context = LocalContext.current
     val pitchViewModel = remember { PitchViewModel() }
     val audioBufferViewModel = remember { AudioBufferViewModel() }
-    val audioRecorder = remember{ AudioProcessor(context, pitchViewModel, audioBufferViewModel) }
+    val pitchCalibrator = remember { PitchCalibrator(context) }
+    val audioRecorder = remember{ AudioProcessor(context, pitchViewModel, audioBufferViewModel, pitchCalibrator) }
     val isRecording = remember { mutableStateOf(false) }
     val isTicking = remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
     ){
-        MainButtons(audioRecorder, isRecording, isTicking)
+        MainButtons(context, audioRecorder, pitchCalibrator, pitchViewModel, isRecording, isTicking)
         PitchDetector(
             modifier = modifier,
             pitchViewModel,
@@ -119,11 +130,15 @@ fun MainScreen(
 
 @Composable
 fun MainButtons(
+    context: Context,
     audioRecorder: AudioProcessor,
+    pitchCalibrator: PitchCalibrator,
+    pitchViewModel: PitchViewModel,
     isRecording: MutableState<Boolean>,
     isTicking: MutableState<Boolean>
 ) {
 
+    val isCalibrating = remember { mutableStateOf(false)}
     val buttonModifierOn = Modifier
             .shadow(
                 elevation = 2.dp,
@@ -170,6 +185,37 @@ fun MainButtons(
             )
         }
         TickerSound(isTicking)
+        Button(
+            modifier = if(isCalibrating.value) buttonModifierOn else buttonModifierOff,
+            contentPadding = PaddingValues(8.dp),
+            colors = if(isCalibrating.value) buttonColorsOn else buttonColorsOff,
+            onClick = onClick@{
+                if(!isRecording.value){
+                    Toast.makeText(context, "Please start recording first", Toast.LENGTH_SHORT).show()
+                    return@onClick
+                }
+                if(!isCalibrating.value){
+                    isCalibrating.value = true
+                    Log.d("MainActivity", "Starting calibration...")
+                    val referenceFrequency = PitchCalibrator.REFERENCE_A4
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        pitchCalibrator.playCalibrationTone(
+                            frequency = referenceFrequency,
+                            durationSeconds = PitchCalibrator.CALIBRATION_DURATION,
+                            pitchViewModel.pitchStateFlow,
+                            isCalibrating
+                        )
+
+                    }
+                }
+            }
+        ){
+            Icon(
+                imageVector = Icons.Default.AutoGraph,
+                "Start Calibration"
+            )
+        }
         Button(
             modifier = if(isRecording.value) buttonModifierOn else buttonModifierOff,
             contentPadding = PaddingValues(8.dp),
