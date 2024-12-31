@@ -2,7 +2,6 @@ package com.example.musicnotespractice
 
 import android.Manifest
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -36,16 +34,11 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -58,17 +51,13 @@ import com.example.musicnotespractice.ui.composables.PitchDetector
 import com.example.musicnotespractice.ui.theme.BackgroundColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
-import com.example.musicnotespractice.utils.Constants
 import com.example.musicnotespractice.utils.PitchCalibrator
 import com.example.musicnotespractice.viewmodel.AudioBufferViewModel
 import com.example.musicnotespractice.viewmodel.PitchViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.mutable.MutableInt
 
 class MainActivity : ComponentActivity() {
 
@@ -156,16 +145,6 @@ fun MainScreen(
         }
     }
 
-//    ClockTicker(
-//        alankars,
-//        isAlankarPlaying,
-//        currentAlankarIndex,
-//        alankarCurrentIndex,
-//        lazyListState,
-//        isTicking,
-//        tickPlayer
-//    )
-
     Column(
         modifier = modifier
     ){
@@ -182,36 +161,6 @@ fun MainScreen(
             pitchViewModel,
             audioBufferViewModel
         )
-    }
-}
-
-@Composable
-fun ClockTicker(
-    alankars: List<List<String>>,
-    isAlankarPlaying: MutableState<Boolean>,
-    currentAlankarIndex: MutableIntState,
-    alankarCurrentIndex: MutableIntState,
-    lazyListState: LazyListState,
-    isTicking: MutableState<Boolean>,
-    tickPlayer: MediaPlayer
-    ) {
-    LaunchedEffect(isAlankarPlaying, alankarCurrentIndex, isTicking) {
-        while(true) {
-            delay(1000)
-            if (isAlankarPlaying.value) {
-                alankarCurrentIndex.intValue =
-                    (alankarCurrentIndex.intValue + 1) % alankars[currentAlankarIndex.intValue].size
-                Log.d(
-                    "AlankarPractice",
-                    "Inside Launched Effect Current Index: ${alankarCurrentIndex.intValue}"
-                )
-                lazyListState.animateScrollToItem(alankarCurrentIndex.intValue)
-            }
-            if (isTicking.value) {
-                tickPlayer.seekTo(0)
-                tickPlayer.start()
-            }
-        }
     }
 }
 
