@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
@@ -36,9 +38,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.musicnotespractice.ui.composables.AlankarPractice
 import com.example.musicnotespractice.ui.composables.PitchDetector
 import com.example.musicnotespractice.ui.theme.BackgroundColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
@@ -63,6 +68,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.mutable.MutableInt
 
 class MainActivity : ComponentActivity() {
 
@@ -115,16 +121,97 @@ fun MainScreen(
     val audioRecorder = remember{ AudioProcessor(context, pitchViewModel, audioBufferViewModel, pitchCalibrator) }
     val isRecording = remember { mutableStateOf(false) }
     val isTicking = remember { mutableStateOf(false) }
+    val tickPlayer = remember {
+        MediaPlayer.create(context, R.raw.tick_sound).apply {
+            isLooping = false
+        }
+    }
+    val alankars = listOf(
+        listOf("Sa", "_", "_", "_", "Re", "_", "_", "_", "Ga", "_", "_", "_", "Ma", "_", "_", "_", "Pa", "_", "_", "_", "Dha", "_", "_", "_", "Ni", "_", "_", "_", "Sa","_", "_", "_", "Sa", "_", "_", "_", "Ni", "_", "_", "_", "Dha", "_", "_", "_", "Pa", "_", "_", "_", "Ma", "_", "_", "_", "Ga", "_", "_", "_", "Re", "_", "_", "_", "Sa", "_", "_", "_"),
+        listOf("Sa", "_", "Sa", "_", "Re", "_", "Re", "_", "Ga", "_", "Ga", "_", "Ma", "_", "Ma", "_", "Pa", "_", "Pa", "_", "Dha", "_", "Dha", "_", "Ni", "_", "Ni", "_", "Sa", "_", "Sa", "_", "Sa", "_", "Sa", "_", "Ni", "_", "Ni", "_", "Dha", "_", "Dha", "_", "Pa", "_", "Pa", "_", "Ma", "_", "Ni", "_", "Ga", "_", "Ga", "_", "Re", "_", "Re", "_", "Sa", "_", "Sa", "_"),
+        listOf("Sa", "Sa", "Sa", "_", "Re", "Re", "Re", "_", "Ga", "Ga", "Ga", "_", "Ma", "Ma", "Ma", "_", "Pa", "Pa", "Pa", "_", "Dha", "Dha", "Dha", "_", "Ni", "Ni", "Ni", "_", "Sa", "Sa", "Sa", "_", "Sa", "Sa", "Sa", "_", "Ni", "Ni", "Ni", "_", "Dha", "Dha", "Dha", "_", "Pa", "Pa", "Pa", "_", "Ma", "Ma", "Ma", "_", "Ga", "Ga", "Ga", "_", "Re", "Re", "Re", "_", "Sa", "Sa", "Sa", "_"),
+        listOf("Sa", "Sa", "Sa", "Sa", "Re", "Re", "Re", "Re", "Ga", "Ga", "Ga", "Ga", "Ma", "Ma", "Ma", "Ma", "Pa", "Pa", "Pa", "Pa", "Dha", "Dha", "Dha", "Dha", "Ni", "Ni", "Ni", "Ni", "Sa", "Sa", "Sa", "Sa", "Sa", "Sa", "Sa", "Sa", "Ni", "Ni", "Ni", "Ni", "Dha", "Dha", "Dha", "Dha", "Pa", "Pa", "Pa", "Pa", "Ma", "Ma", "Ma", "Ma", "Ga", "Ga", "Ga", "Ga", "Re", "Re", "Re", "Re", "Sa", "Sa", "Sa", "Sa")
+    )
+    val lazyListState = rememberLazyListState()
+    val currentAlankarIndex = remember { mutableIntStateOf(0) }
+    val alankarCurrentIndex = remember { mutableIntStateOf(0) }
+    val isAlankarPlaying = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isAlankarPlaying, alankarCurrentIndex, isTicking) {
+        while(true) {
+            delay(1000)
+            if (isAlankarPlaying.value) {
+                alankarCurrentIndex.intValue =
+                    (alankarCurrentIndex.intValue + 1) % alankars[currentAlankarIndex.intValue].size
+                Log.d(
+                    "AlankarPractice",
+                    "Inside Launched Effect Current Index: ${alankarCurrentIndex.intValue}"
+                )
+                lazyListState.animateScrollToItem(alankarCurrentIndex.intValue)
+            }
+            if (isTicking.value) {
+                tickPlayer.seekTo(0)
+                tickPlayer.start()
+            }
+        }
+    }
+
+//    ClockTicker(
+//        alankars,
+//        isAlankarPlaying,
+//        currentAlankarIndex,
+//        alankarCurrentIndex,
+//        lazyListState,
+//        isTicking,
+//        tickPlayer
+//    )
 
     Column(
         modifier = modifier
     ){
         MainButtons(context, audioRecorder, pitchCalibrator, pitchViewModel, isRecording, isTicking)
+        AlankarPractice(
+            alankars,
+            isAlankarPlaying,
+            currentAlankarIndex,
+            alankarCurrentIndex,
+            lazyListState,
+        )
         PitchDetector(
             modifier = modifier,
             pitchViewModel,
             audioBufferViewModel
         )
+    }
+}
+
+@Composable
+fun ClockTicker(
+    alankars: List<List<String>>,
+    isAlankarPlaying: MutableState<Boolean>,
+    currentAlankarIndex: MutableIntState,
+    alankarCurrentIndex: MutableIntState,
+    lazyListState: LazyListState,
+    isTicking: MutableState<Boolean>,
+    tickPlayer: MediaPlayer
+    ) {
+    LaunchedEffect(isAlankarPlaying, alankarCurrentIndex, isTicking) {
+        while(true) {
+            delay(1000)
+            if (isAlankarPlaying.value) {
+                alankarCurrentIndex.intValue =
+                    (alankarCurrentIndex.intValue + 1) % alankars[currentAlankarIndex.intValue].size
+                Log.d(
+                    "AlankarPractice",
+                    "Inside Launched Effect Current Index: ${alankarCurrentIndex.intValue}"
+                )
+                lazyListState.animateScrollToItem(alankarCurrentIndex.intValue)
+            }
+            if (isTicking.value) {
+                tickPlayer.seekTo(0)
+                tickPlayer.start()
+            }
+        }
     }
 }
 
@@ -184,7 +271,6 @@ fun MainButtons(
                 "Start/Stop Ticker"
             )
         }
-        TickerSound(isTicking)
         Button(
             modifier = if(isCalibrating.value) buttonModifierOn else buttonModifierOff,
             contentPadding = PaddingValues(8.dp),
@@ -236,46 +322,6 @@ fun MainButtons(
                 imageVector = if(isRecording.value) Icons.Default.Mic else Icons.Default.MicOff,
                 "Start/Stop Record"
             )
-        }
-    }
-}
-
-@Composable
-fun TickerSound(
-    isTicking: MutableState<Boolean>
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val tickJob = remember { mutableStateOf<Job?>(null) }
-    val tickPlayer = remember {
-        MediaPlayer.create(context, R.raw.tick_sound).apply {
-            isLooping = false
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            tickPlayer.release()
-            tickJob.value?.cancel()
-        }
-    }
-
-    LaunchedEffect(isTicking.value) {
-        if (isTicking.value) {
-            tickJob.value?.cancel()
-
-            tickJob.value = scope.launch {
-                while (isActive) {
-                    Log.d("Metronome", "Loud Tick")
-                    tickPlayer.seekTo(0)
-                    tickPlayer.start()
-                    delay(1000)
-                }
-            }
-        }
-        else {
-            tickJob.value?.cancel()
-            tickJob.value = null
         }
     }
 }
