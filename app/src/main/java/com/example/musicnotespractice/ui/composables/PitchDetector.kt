@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.musicnotespractice.ui.theme.BackgroundColor
+import com.example.musicnotespractice.ui.theme.ButtonColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
 import com.example.musicnotespractice.utils.PitchCalibrator
@@ -158,7 +159,7 @@ fun PitchDetector(
                 .padding(16.dp)
                 .fillMaxWidth(0.9f),
             barData = frequencyBins,
-            color = Color.Blue,
+            color = ButtonColor,
             axisConfig = AxisConfig(
                 showAxis = true,
                 isAxisDashed = false,

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +54,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import com.example.musicnotespractice.ui.theme.ButtonColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
+import com.example.musicnotespractice.ui.theme.TextColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -109,7 +112,13 @@ fun AlankarPractice(
         ) {
             Button(
                 onClick = { isAlankarPlaying.value = !isAlankarPlaying.value },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp),
+                colors = ButtonColors(
+                    containerColor = ButtonColor,
+                    contentColor = TextColor,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledContentColor = Color.LightGray
+                )
             ) {
                 Text(if (isAlankarPlaying.value) "Pause" else "Play")
             }
@@ -122,7 +131,13 @@ fun AlankarPractice(
                         lazyListState.animateScrollToItem(0)
                     }
                 },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp),
+                colors = ButtonColors(
+                    containerColor = ButtonColor,
+                    contentColor = TextColor,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledContentColor = Color.LightGray
+                )
             ) {
                 Text("Reset")
             }
@@ -138,8 +153,7 @@ fun SwarBox(
     Box(
         modifier = Modifier
             .background(
-                color = if (isHighlighted) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant,
+                color = if (isHighlighted) ButtonColor else Color.White,
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(8.dp),
