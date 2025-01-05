@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,15 +35,16 @@ import kotlin.math.roundToInt
 fun PitchDetector(
     modifier: Modifier,
     pitchViewModel: PitchViewModel,
-    audioBufferViewModel: AudioBufferViewModel
+    audioBufferViewModel: AudioBufferViewModel,
+    currPlayingSwar: MutableState<String>
 ) {
 
-    val allNotes = arrayOf("Dha", "TDha", "Ni", "Sa", "TSa", "Re", "TRe", "Ga", "Ma", "TMa", "Pa", "TPa")
+    val allSwars = arrayOf("Dha", "TDha", "Ni", "Sa", "TSa", "Re", "TRe", "Ga", "Ma", "TMa", "Pa", "TPa")
 
     val pitch by pitchViewModel.pitchStateFlow.collectAsState()
     val audioBuffer by audioBufferViewModel.audioBufferStateFlow.collectAsState()
-    var note = (12 * log2(pitch / 440.0)) % 12
-    val octave = floor(log2(pitch / 440.0)) + 4
+    var swarIndex = (12 * log2(pitch / 27.5)) % 12
+    val saptak = floor(log2(pitch / 27.5)) + 4
 
     val musicalFrequencies = remember {
         listOf(
@@ -63,12 +65,11 @@ fun PitchDetector(
         modifier = modifier.fillMaxSize()
     ) {
 
-        val noteName: String
-        if(pitch>0 && note>0){
-            if(note.roundToInt()==12){
-                note = 0.0
+        if(pitch>0 && swarIndex>0){
+            if(swarIndex.roundToInt()==12){
+                swarIndex = 0.0
             }
-            noteName = allNotes[note.roundToInt()]
+            currPlayingSwar.value = allSwars[swarIndex.roundToInt()]
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -76,15 +77,15 @@ fun PitchDetector(
                     .weight(1f),
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                text = "Pitch: ${pitch.roundToInt()} \n Octave: $octave Note: $noteName"
+                text = "Pitch: ${pitch.roundToInt()} \n Octave: $saptak Note: ${currPlayingSwar.value}"
             )
         }
         else{
-            noteName = " "
+            currPlayingSwar.value = " "
             Text(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
                     .weight(1f)
+                    .align(Alignment.CenterHorizontally)
                     .padding(8.dp),
                 color = Color.White,
                 textAlign = TextAlign.Center,
@@ -96,7 +97,7 @@ fun PitchDetector(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .weight(4f),
-            noteName
+            currPlayingSwar.value
         )
 
         val fftSize = audioBuffer.size
@@ -173,11 +174,13 @@ fun PitchDetector(
 @Composable
 fun PitchDetectorPreview() {
     MusicNotesPracticeTheme {
+        val currPlayingSwar = remember { mutableStateOf(" ")}
         PitchDetector(
             modifier = Modifier.background(BackgroundColor)
                 .padding(16.dp),
             PitchViewModel(),
             AudioBufferViewModel(),
+            currPlayingSwar
         )
     }
 }

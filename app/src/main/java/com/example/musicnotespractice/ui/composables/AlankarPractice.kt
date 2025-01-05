@@ -1,7 +1,6 @@
 package com.example.musicnotespractice.ui.composables
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
@@ -23,7 +21,6 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +36,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,8 +82,9 @@ fun AlankarPractice(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
              items(alankars[currentAlankarIndex.intValue].size){ index ->
-                SwarBox(
+                TextBox(
                     swar = alankars[currentAlankarIndex.intValue][index],
+                    fontSize = 24.sp,
                     isHighlighted = index == alankarCurrentIndex.intValue
                 )
             }
@@ -131,30 +128,6 @@ fun AlankarPractice(
                 Text("Reset")
             }
         }
-    }
-}
-
-@Composable
-fun SwarBox(
-    swar: String,
-    isHighlighted: Boolean
-) {
-    Box(
-        modifier = Modifier
-            .background(
-                color = if (isHighlighted) ButtonColor else Color.White,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = swar,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isHighlighted) Color.White
-            else MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 

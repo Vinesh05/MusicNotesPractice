@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.musicnotespractice.ui.composables.AlankarPractice
 import com.example.musicnotespractice.ui.composables.PitchDetector
+import com.example.musicnotespractice.ui.composables.SwarPractice
 import com.example.musicnotespractice.ui.theme.BackgroundColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
@@ -105,6 +106,7 @@ fun MainScreen(
 ){
     val context = LocalContext.current
     val pitchViewModel = remember { PitchViewModel() }
+    val currPlayingSwar = remember { mutableStateOf(" ") }
     val audioBufferViewModel = remember { AudioBufferViewModel() }
     val pitchCalibrator = remember { PitchCalibrator(context) }
     val audioRecorder = remember{ AudioProcessor(context, pitchViewModel, audioBufferViewModel, pitchCalibrator) }
@@ -125,6 +127,7 @@ fun MainScreen(
     val currentAlankarIndex = remember { mutableIntStateOf(0) }
     val alankarCurrentIndex = remember { mutableIntStateOf(0) }
     val isAlankarPlaying = remember { mutableStateOf(false) }
+    val allSwars = listOf("Sa", "TSa", "Re", "TRe", "Ga", "Ma", "TMa", "Pa", "TPa", "Dha", "TDha", "Ni")
 
     LaunchedEffect(isAlankarPlaying, alankarCurrentIndex, isTicking) {
         while(true) {
@@ -148,24 +151,39 @@ fun MainScreen(
     Column(
         modifier = modifier
     ){
-        MainButtons(context, audioRecorder, pitchCalibrator, pitchViewModel, isRecording, isTicking)
-        AlankarPractice(
-            alankars,
-            isAlankarPlaying,
-            currentAlankarIndex,
-            alankarCurrentIndex,
-            lazyListState,
+        MainButtons(
+            Modifier.weight(1f),
+            context,
+            audioRecorder,
+            pitchCalibrator,
+            pitchViewModel,
+            isRecording,
+            isTicking
+        )
+//        AlankarPractice(
+//            alankars,
+//            isAlankarPlaying,
+//            currentAlankarIndex,
+//            alankarCurrentIndex,
+//            lazyListState,
+//        )
+        SwarPractice(
+            Modifier.weight(2f),
+            allSwars,
+            currPlayingSwar
         )
         PitchDetector(
-            modifier = modifier,
+            Modifier.weight(5f),
             pitchViewModel,
-            audioBufferViewModel
+            audioBufferViewModel,
+            currPlayingSwar
         )
     }
 }
 
 @Composable
 fun MainButtons(
+    modifier: Modifier = Modifier,
     context: Context,
     audioRecorder: AudioProcessor,
     pitchCalibrator: PitchCalibrator,
@@ -204,7 +222,7 @@ fun MainButtons(
         )
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Button(
