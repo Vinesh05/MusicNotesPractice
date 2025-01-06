@@ -1,16 +1,21 @@
 package com.example.musicnotespractice.ui.composables
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,16 +37,19 @@ fun SwarPractice(
 ) {
     val isSwarPlaying = remember { mutableStateOf(false) }
     val currSelectedSwar = remember { mutableStateOf("Sa") }
-    val swarAverageResponseTime = remember { HashMap<String, Double>()}
+    val swarAverageResponseTime = remember { allSwars.associateWith{0.0}.toMutableMap() }
+    val currSwarStartTime = remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(Unit){
-        allSwars.forEach { swar->
-            swarAverageResponseTime[swar] = 0.0
-        }
         while(true){
             delay(500)
             if(currPlayingSwar.value==currSelectedSwar.value) {
+                val responseTime = System.currentTimeMillis() - currSwarStartTime.longValue
+                swarAverageResponseTime[currSelectedSwar.value] =
+                    (swarAverageResponseTime[currSelectedSwar.value]!! + responseTime) / 2
+
                 currSelectedSwar.value = allSwars.random()
+                currSwarStartTime.longValue = System.currentTimeMillis()
             }
         }
     }
@@ -52,88 +60,84 @@ fun SwarPractice(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        TextBox(
-            Modifier.weight(2f),
-            swar = currSelectedSwar.value,
-            fontSize = 32.sp,
-            isHighlighted = false
-        )
-
         Column(
-            modifier = Modifier.weight(3f),
+            modifier = Modifier.weight(2f)
         ) {
-            ControlButtons(
-                Modifier.fillMaxWidth().weight(1f),
-                allSwars,
-                isSwarPlaying,
-                swarAverageResponseTime
+
+            TextBox(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+                swar = currSelectedSwar.value,
+                fontSize = 32.sp,
+                isHighlighted = false
             )
-            ResponseTimeScores(
-                Modifier.fillMaxWidth().weight(4f),
-                swarAverageResponseTime
-            )
+
+            Button(
+                onClick = {
+                    isSwarPlaying.value = !isSwarPlaying.value
+                    currSwarStartTime.longValue = System.currentTimeMillis()
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(start = 8.dp, end = 8.dp, top = 4.dp),
+                colors = ButtonColors(
+                    containerColor = ButtonColor,
+                    contentColor = TextColor,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledContentColor = Color.LightGray
+                )
+            ) {
+                Text(if (isSwarPlaying.value) "Pause" else "Play")
+            }
+
+            Button(
+                onClick = {
+                    isSwarPlaying.value = false
+                    allSwars.forEach { swar ->
+                        swarAverageResponseTime[swar] = 0.0
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(start = 8.dp, end = 8.dp, bottom = 4.dp),
+                colors = ButtonColors(
+                    containerColor = ButtonColor,
+                    contentColor = TextColor,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledContentColor = Color.LightGray
+                )
+            ) {
+                Text("Reset")
+            }
         }
+
+        ResponseTimeScores(
+            Modifier
+                .weight(3f)
+                .fillMaxWidth(),
+            swarAverageResponseTime
+        )
     }
 }
 
 @Composable
 fun ResponseTimeScores(
     modifier: Modifier,
-    swarAverageResponseTime: HashMap<String, Double>
+    swarAverageResponseTime: MutableMap<String, Double>
 ) {
-    Column(
-        modifier = modifier
-    ) {
-        swarAverageResponseTime.forEach { (swar, averageResponseTime) ->
-            Text(
-                text = "$swar: $averageResponseTime ms"
-            )
-        }
-    }
-}
-
-@Composable
-fun ControlButtons(
-    modifier: Modifier,
-    allSwars: List<String>,
-    isSwarPlaying: MutableState<Boolean>,
-    swarAverageResponseTime: HashMap<String, Double>
-) {
-
-    Row(
-        modifier = modifier,
+    Log.d("SwarPractice", "Response Time Scores: ${swarAverageResponseTime.values.size}")
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 120.dp),
+        modifier = modifier.padding(8.dp),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.Center
     ) {
-        Button(
-            onClick = { isSwarPlaying.value = !isSwarPlaying.value },
-            modifier = Modifier.padding(8.dp),
-            colors = ButtonColors(
-                containerColor = ButtonColor,
-                contentColor = TextColor,
-                disabledContainerColor = Color.DarkGray,
-                disabledContentColor = Color.LightGray
+        items(swarAverageResponseTime.toList()) { (key, value) ->
+            Text(
+                text = "$key: $value ms",
+                color = TextColor,
+                modifier = Modifier.padding(0.dp)
             )
-        ) {
-            Text(if (isSwarPlaying.value) "Pause" else "Play")
-        }
-
-        Button(
-            onClick = {
-                isSwarPlaying.value = false
-                allSwars.forEach { swar ->
-                    swarAverageResponseTime[swar] = 0.0
-                }
-            },
-            modifier = Modifier.padding(8.dp),
-            colors = ButtonColors(
-                containerColor = ButtonColor,
-                contentColor = TextColor,
-                disabledContainerColor = Color.DarkGray,
-                disabledContentColor = Color.LightGray
-            )
-        ) {
-            Text("Reset")
         }
     }
 }

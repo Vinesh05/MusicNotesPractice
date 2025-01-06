@@ -39,6 +39,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -46,7 +47,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.example.musicnotespractice.ui.composables.AlankarPractice
 import com.example.musicnotespractice.ui.composables.PitchDetector
 import com.example.musicnotespractice.ui.composables.SwarPractice
 import com.example.musicnotespractice.ui.theme.BackgroundColor
@@ -152,7 +152,7 @@ fun MainScreen(
         modifier = modifier
     ){
         MainButtons(
-            Modifier.weight(1f),
+            Modifier.weight(0.5f),
             context,
             audioRecorder,
             pitchCalibrator,
@@ -168,12 +168,12 @@ fun MainScreen(
 //            lazyListState,
 //        )
         SwarPractice(
-            Modifier.weight(2f),
+            Modifier.weight(3f),
             allSwars,
             currPlayingSwar
         )
         PitchDetector(
-            Modifier.weight(5f),
+            Modifier.weight(8.5f),
             pitchViewModel,
             audioBufferViewModel,
             currPlayingSwar
@@ -226,7 +226,11 @@ fun MainButtons(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Button(
-            modifier = if(isTicking.value) buttonModifierOn else buttonModifierOff,
+            modifier = if(isTicking.value){
+                buttonModifierOn.align(Alignment.CenterVertically)
+            } else {
+                buttonModifierOff.align(Alignment.CenterVertically)
+            },
             contentPadding = PaddingValues(8.dp),
             colors = if(isTicking.value) buttonColorsOn else buttonColorsOff,
             onClick = {
@@ -239,7 +243,11 @@ fun MainButtons(
             )
         }
         Button(
-            modifier = if(isCalibrating.value) buttonModifierOn else buttonModifierOff,
+            modifier = if(isCalibrating.value) {
+                buttonModifierOn.align(Alignment.CenterVertically)
+            } else {
+                buttonModifierOff.align(Alignment.CenterVertically)
+            },
             contentPadding = PaddingValues(8.dp),
             colors = if(isCalibrating.value) buttonColorsOn else buttonColorsOff,
             onClick = onClick@{

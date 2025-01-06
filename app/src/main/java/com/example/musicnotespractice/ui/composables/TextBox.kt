@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,8 +34,7 @@ fun TextBox(
             text = swar,
             fontSize = fontSize,
             fontWeight = FontWeight.Bold,
-            color = if (isHighlighted) Color.White
-            else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (isHighlighted) Color.White else Color.Black
         )
     }
 }
