@@ -43,7 +43,7 @@ fun SwarPractice(
     LaunchedEffect(Unit){
         while(true){
             delay(500)
-            if(currPlayingSwar.value==currSelectedSwar.value) {
+            if(isSwarPlaying.value && currPlayingSwar.value==currSelectedSwar.value) {
                 val responseTime = System.currentTimeMillis() - currSwarStartTime.longValue
                 swarAverageResponseTime[currSelectedSwar.value] =
                     (swarAverageResponseTime[currSelectedSwar.value]!! + responseTime) / 2

@@ -42,7 +42,7 @@ class PitchCalibrator(
         isCalibrating: MutableState<Boolean>
     ) = suspendCancellableCoroutine { continuation ->
 
-        calibrationOffset = 0f
+        calibrationOffset = 1f
 
         val audioData = generateCalibrationTone(frequency, durationSeconds)
 
@@ -115,13 +115,14 @@ class PitchCalibrator(
     }
 
     fun calibrate(referenceFrequency: Float, detectedFrequency: Float) {
-        calibrationOffset = referenceFrequency - detectedFrequency
+        val diff = referenceFrequency - detectedFrequency
+        calibrationOffset = diff / referenceFrequency
         Log.d("PitchCalibrator", "Calibration offset: $calibrationOffset")
         sharedPrefs.edit().putFloat(Constants.SHARED_PREFERENCE_CALIBRATION_OFFSET_KEY, calibrationOffset).apply()
     }
 
     fun getCalibratedPitch(frequency: Float): Float {
-        return frequency + calibrationOffset
+        return frequency * calibrationOffset
     }
 
     companion object {

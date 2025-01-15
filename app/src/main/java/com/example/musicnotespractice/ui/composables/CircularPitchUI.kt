@@ -54,17 +54,6 @@ fun CircularPitchUI(
             size.center
         }
 
-        drawCircle(
-            brush = Brush.radialGradient(
-                radius = size.width/10,
-                center = circleCenter,
-                colorStops = arrayOf(
-                    Pair(0f, Color(0xFFF1C25D)), Pair(0.60f, Color(0x88F1C25D)), Pair(1f, Color(0x01F1C25D))
-                )
-            ),
-            radius = size.width/10,
-            center = circleCenter
-        )
         val radius = if(size.width<size.height){
             //diameter = 90% of width
             size.width*0.45f
@@ -73,6 +62,17 @@ fun CircularPitchUI(
             //diameter = 90% of height
             size.height*0.45f
         }
+        drawCircle(
+            brush = Brush.radialGradient(
+                radius = radius/5,
+                center = circleCenter,
+                colorStops = arrayOf(
+                    Pair(0f, Color(0xFFF1C25D)), Pair(0.60f, Color(0x88F1C25D)), Pair(1f, Color(0x01F1C25D))
+                )
+            ),
+            radius = radius/5,
+            center = circleCenter
+        )
         notesCosSinValues.forEach { (noteText, cosSinValues) ->
             val textLayoutResult = textMeasurer.measure(
                 text = noteText,

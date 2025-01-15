@@ -48,7 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.musicnotespractice.ui.composables.PitchDetector
-import com.example.musicnotespractice.ui.composables.SwarPractice
+import com.example.musicnotespractice.ui.composables.PracticeComposables
 import com.example.musicnotespractice.ui.theme.BackgroundColor
 import com.example.musicnotespractice.ui.theme.MusicNotesPracticeTheme
 import com.example.musicnotespractice.utils.AudioProcessor
@@ -160,6 +160,16 @@ fun MainScreen(
             isRecording,
             isTicking
         )
+        PracticeComposables(
+            Modifier.weight(3f),
+            alankars,
+            isAlankarPlaying,
+            currentAlankarIndex,
+            alankarCurrentIndex,
+            lazyListState,
+            allSwars,
+            currPlayingSwar
+        )
 //        AlankarPractice(
 //            alankars,
 //            isAlankarPlaying,
@@ -167,11 +177,11 @@ fun MainScreen(
 //            alankarCurrentIndex,
 //            lazyListState,
 //        )
-        SwarPractice(
-            Modifier.weight(3f),
-            allSwars,
-            currPlayingSwar
-        )
+//        SwarPractice(
+//            Modifier.weight(3f),
+//            allSwars,
+//            currPlayingSwar
+//        )
         PitchDetector(
             Modifier.weight(8.5f),
             pitchViewModel,
