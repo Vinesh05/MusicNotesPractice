@@ -125,6 +125,10 @@ class PitchCalibrator(
         return frequency * calibrationOffset
     }
 
+    fun setCalibrationOffset(offset: Float){
+        calibrationOffset = offset
+    }
+
     companion object {
         const val REFERENCE_A4 = 440f // A4 note
         const val CALIBRATION_DURATION = 2f // seconds

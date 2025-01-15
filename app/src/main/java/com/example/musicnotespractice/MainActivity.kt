@@ -1,52 +1,32 @@
 package com.example.musicnotespractice
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoGraph
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.TimerOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.musicnotespractice.ui.composables.MainButtons
 import com.example.musicnotespractice.ui.composables.PitchDetector
 import com.example.musicnotespractice.ui.composables.PracticeComposables
 import com.example.musicnotespractice.ui.theme.BackgroundColor
@@ -55,10 +35,7 @@ import com.example.musicnotespractice.utils.AudioProcessor
 import com.example.musicnotespractice.utils.PitchCalibrator
 import com.example.musicnotespractice.viewmodel.AudioBufferViewModel
 import com.example.musicnotespractice.viewmodel.PitchViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -170,144 +147,12 @@ fun MainScreen(
             allSwars,
             currPlayingSwar
         )
-//        AlankarPractice(
-//            alankars,
-//            isAlankarPlaying,
-//            currentAlankarIndex,
-//            alankarCurrentIndex,
-//            lazyListState,
-//        )
-//        SwarPractice(
-//            Modifier.weight(3f),
-//            allSwars,
-//            currPlayingSwar
-//        )
         PitchDetector(
             Modifier.weight(8.5f),
             pitchViewModel,
             audioBufferViewModel,
             currPlayingSwar
         )
-    }
-}
-
-@Composable
-fun MainButtons(
-    modifier: Modifier = Modifier,
-    context: Context,
-    audioRecorder: AudioProcessor,
-    pitchCalibrator: PitchCalibrator,
-    pitchViewModel: PitchViewModel,
-    isRecording: MutableState<Boolean>,
-    isTicking: MutableState<Boolean>
-) {
-
-    val isCalibrating = remember { mutableStateOf(false)}
-    val buttonModifierOn = Modifier
-            .shadow(
-                elevation = 2.dp,
-                shape = CircleShape,
-                spotColor = Color(0xFF82C95A)
-            )
-            .defaultMinSize(4.dp, 4.dp)
-    val buttonModifierOff = Modifier
-            .shadow(
-                elevation = 2.dp,
-                shape = CircleShape,
-                spotColor = Color(0xFFE1795A)
-            )
-            .defaultMinSize(4.dp, 4.dp)
-
-    val buttonColorsOn = ButtonColors(
-            containerColor = Color(0xFF82C95A),
-            contentColor = Color.DarkGray,
-            disabledContainerColor = Color.Gray,
-            disabledContentColor = Color.DarkGray
-        )
-    val buttonColorsOff = ButtonColors(
-            containerColor = Color(0xFFE1795A),
-            contentColor = Color.DarkGray,
-            disabledContainerColor = Color.Gray,
-            disabledContentColor = Color.DarkGray
-        )
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Button(
-            modifier = if(isTicking.value){
-                buttonModifierOn.align(Alignment.CenterVertically)
-            } else {
-                buttonModifierOff.align(Alignment.CenterVertically)
-            },
-            contentPadding = PaddingValues(8.dp),
-            colors = if(isTicking.value) buttonColorsOn else buttonColorsOff,
-            onClick = {
-                isTicking.value = !isTicking.value
-            }
-        ){
-            Icon(
-                imageVector = if(isRecording.value) Icons.Default.Timer else Icons.Default.TimerOff,
-                "Start/Stop Ticker"
-            )
-        }
-        Button(
-            modifier = if(isCalibrating.value) {
-                buttonModifierOn.align(Alignment.CenterVertically)
-            } else {
-                buttonModifierOff.align(Alignment.CenterVertically)
-            },
-            contentPadding = PaddingValues(8.dp),
-            colors = if(isCalibrating.value) buttonColorsOn else buttonColorsOff,
-            onClick = onClick@{
-                if(!isRecording.value){
-                    Toast.makeText(context, "Please start recording first", Toast.LENGTH_SHORT).show()
-                    return@onClick
-                }
-                if(!isCalibrating.value){
-                    isCalibrating.value = true
-                    Log.d("MainActivity", "Starting calibration...")
-                    val referenceFrequency = PitchCalibrator.REFERENCE_A4
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        pitchCalibrator.playCalibrationTone(
-                            frequency = referenceFrequency,
-                            durationSeconds = PitchCalibrator.CALIBRATION_DURATION,
-                            pitchViewModel.pitchStateFlow,
-                            isCalibrating
-                        )
-
-                    }
-                }
-            }
-        ){
-            Icon(
-                imageVector = Icons.Default.AutoGraph,
-                "Start Calibration"
-            )
-        }
-        Button(
-            modifier = if(isRecording.value) buttonModifierOn else buttonModifierOff,
-            contentPadding = PaddingValues(8.dp),
-            colors = if(isRecording.value) buttonColorsOn else buttonColorsOff,
-            onClick = {
-                if (!isRecording.value) {
-                    Log.d("MainActivity", "Starting recording...")
-                    audioRecorder.startRecording()
-                    isRecording.value = true
-                } else {
-                    Log.d("MainActivity", "Stopping recording...")
-                    audioRecorder.stopRecording()
-                    isRecording.value = false
-                }
-            }
-        ){
-            Icon(
-                imageVector = if(isRecording.value) Icons.Default.Mic else Icons.Default.MicOff,
-                "Start/Stop Record"
-            )
-        }
     }
 }
 
