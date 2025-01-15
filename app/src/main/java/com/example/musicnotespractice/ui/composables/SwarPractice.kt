@@ -127,7 +127,7 @@ fun ResponseTimeScores(
 ) {
     Log.d("SwarPractice", "Response Time Scores: ${swarAverageResponseTime.values.size}")
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 120.dp),
+        columns = GridCells.Adaptive(minSize = 80.dp),
         modifier = modifier.padding(8.dp),
         horizontalArrangement = Arrangement.Center,
         verticalArrangement = Arrangement.Center

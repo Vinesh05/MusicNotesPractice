@@ -44,7 +44,7 @@ fun PitchDetector(
     val pitch by pitchViewModel.pitchStateFlow.collectAsState()
     val audioBuffer by audioBufferViewModel.audioBufferStateFlow.collectAsState()
     var swarIndex = (12 * log2(pitch / 27.5)) % 12
-    val saptak = floor(log2(pitch / 27.5)) + 4
+    val saptak = floor(log2(pitch / 27.5))
 
     val musicalFrequencies = remember {
         listOf(

@@ -116,7 +116,12 @@ class PitchCalibrator(
 
     fun calibrate(referenceFrequency: Float, detectedFrequency: Float) {
         val diff = referenceFrequency - detectedFrequency
-        calibrationOffset = diff / referenceFrequency
+        calibrationOffset = if(diff<0){
+            1 - diff / referenceFrequency
+        }
+        else{
+            1 + diff / referenceFrequency
+        }
         Log.d("PitchCalibrator", "Calibration offset: $calibrationOffset")
         sharedPrefs.edit().putFloat(Constants.SHARED_PREFERENCE_CALIBRATION_OFFSET_KEY, calibrationOffset).apply()
     }

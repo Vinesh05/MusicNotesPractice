@@ -105,7 +105,7 @@ fun MainButtons(
                             calibrationOffset.value = newValue
                         }
                     },
-                    label = { Text("Enter offset in cents") },
+                    label = { Text("Enter offset") },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -119,7 +119,7 @@ fun MainButtons(
                     onClick = {
                         calibrationOffset.value.toFloatOrNull()?.let { offset ->
                             pitchCalibrator.setCalibrationOffset(offset)
-                            Toast.makeText(context, "Calibration offset set to $offset cents", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Calibration offset set to $offset", Toast.LENGTH_SHORT).show()
                         }
                         showCalibrationDialog.value = false
                     }
